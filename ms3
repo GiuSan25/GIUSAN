@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MS3 VR TV - Experiencia de Video</title>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; }
+    </style>
+</head>
+<body>
+
+    <a-scene background="color: #010005" cursor="rayOrigin: mouse" raycaster="objects: .interactive">
+        
+        <a-assets>
+            <img id="grid" src="https://img.gs/bb6197/grid.png" crossorigin="anonymous">
+            <img id="logo-ms3" src="https://storage.googleapis.com/demos.generativeai.google.com/gallery/artifacts/115983478_166929698331370_5423753122991138645_o-removebg-preview.png" crossorigin="anonymous">
+            
+            <!-- Imágenes de Programas MS3 -->
+            <img id="img-moda" src="https://storage.googleapis.com/demos.generativeai.google.com/gallery/artifacts/423f05b9-7b70-4b26-8800-47b744a66e44.png" crossorigin="anonymous">
+            <img id="img-medicina" src="https://storage.googleapis.com/demos.generativeai.google.com/gallery/artifacts/a14704e0-a75d-4953-8ccf-705a1e27a69b.png" crossorigin="anonymous">
+            <img id="img-vedette" src="https://storage.googleapis.com/demos.generativeai.google.com/gallery/artifacts/c428458e-0f13-40e1-b8d1-d2861a8684cb.png" crossorigin="anonymous">
+            <img id="web-preview" src="https://api.screenshotmachine.com/?key=0c7f21&url=https://www.ms3lanuevatelevision.com/&dimension=1024x768" crossorigin="anonymous">
+        </a-assets>
+
+        <!-- CÁMARA Y CURSOR NEÓN (2 SEGUNDOS) -->
+        <a-entity id="rig" position="0 1.6 5">
+            <a-camera id="camera" look-controls wasd-controls>
+                <a-cursor
+                    id="cursor"
+                    cursor="fuse: true; fuseTimeout: 2000"
+                    geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03"
+                    material="color: #00fbff; shader: flat"
+                    position="0 0 -1"
+                    raycaster="objects: .interactive"
+                    animation__fusing="property: scale; startEvents: fusing; from: 1 1 1; to: 0.1 0.1 0.1; dur: 2000; easing: linear"
+                    animation__reset="property: scale; startEvents: mouseleave; to: 1 1 1; dur: 200; easing: easeInCubic">
+                </a-cursor>
+            </a-camera>
+        </a-entity>
+
+        <!-- FONDO: TÚNEL HIPERESPACIAL -->
+        <a-sky color="#020008"></a-sky>
+        <a-entity id="tunnel-container" rotation="90 0 0">
+            <a-cylinder radius="35" height="150" side="back" open-ended="true"
+                        material="src: #grid; repeat: 10 50; color: #1a0033; transparent: true; opacity: 0.4"
+                        animation="property: material.offset; from: 0 0; to: 0 50; dur: 45000; loop: true; easing: linear">
+            </a-cylinder>
+        </a-entity>
+
+        <!-- LOBBY INICIAL -->
+        <a-entity id="lobby">
+            <a-plane position="0 -1.6 0" rotation="-90 0 0" width="100" height="100" 
+                     material="src: #grid; repeat: 60 60; transparent: true; opacity: 0.5; color: #bc13fe"
+                     animation="property: material.color; from: #bc13fe; to: #00fbff; dur: 3000; dir: alternate; loop: true">
+            </a-plane>
+
+            <a-entity id="logo-group" position="0 2.8 -6">
+                <a-ring radius-inner="2.5" radius-outer="2.8" rotation="-90 0 0" position="0 -4 0" 
+                        material="color: #00fbff; shader: flat; opacity: 0.5"
+                        animation="property: scale; from: 0.8 0.8 0.8; to: 1.2 1.2 1.2; dur: 2000; dir: alternate; loop: true">
+                </a-ring>
+                <a-entity id="logo-container" 
+                          animation="property: position; dir: alternate; dur: 3000; easing: easeInOutSine; loop: true; to: 0 0.5 0">
+                    <a-image src="#logo-ms3" width="6.5" height="6.5"
+                             animation="property: rotation; to: 0 360 0; dur: 15000; easing: linear; loop: true">
+                    </a-image>
+                </a-entity>
+            </a-entity>
+
+            <a-entity id="entry-ui" position="0 0 -5">
+                <a-text value="MS3 LA NUEVA TELEVISION" align="center" position="0 1.6 0" scale="0.9 0.9 0.9" color="#00fbff" font="mozillavr"></a-text>
+                <a-text value="MIRA EL BOTON 2 SEGUNDOS" align="center" position="0 1.2 0" scale="0.5 0.5 0.5" color="#fff" opacity="0.8"></a-text>
+                
+                <a-entity id="main-button" class="interactive"
+                          geometry="primitive: box; width: 2.2; height: 0.7; depth: 0.2" 
+                          material="color: #000; emissive: #00fbff; emissiveIntensity: 0.8">
+                    <a-text value="ENTRAR" align="center" position="0 0 0.12" color="#fff" width="7" font="mozillavr"></a-text>
+                </a-entity>
+
+                <a-ring id="visual-loader" color="#00fbff" radius-inner="1.1" radius-outer="1.18" position="0 0 -0.15"
+                        theta-length="0"
+                        animation__loading="property: theta-length; from: 0; to: 360; dur: 2000; easing: linear; startEvents: startAnim"
+                        animation__reset="property: theta-length; to: 0; dur: 200; startEvents: stopAnim">
+                </a-ring>
+            </a-entity>
+        </a-entity>
+
+        <!-- DASHBOARD (CARTELERA DE PROGRAMAS) -->
+        <a-entity id="dashboard" position="0 1.6 0" visible="false" scale="0.001 0.001 0.001">
+            
+            <a-entity position="0 2.5 -4">
+                <a-image src="#logo-ms3" width="1.2" height="1.2" position="0 0.8 0"></a-image>
+                <a-text value="PROGRAMAS DESTACADOS" align="center" color="#00fbff" width="8" font="mozillavr"></a-text>
+            </a-entity>
+
+            <!-- Programa 1: VR MODA -->
+            <a-entity class="interactive program-card" position="-3.5 0.5 -4" rotation="0 20 0">
+                <a-image src="#img-moda" width="3" height="2" material="shader: flat"></a-image>
+                <a-text value="VR MODA - Caterina Pugin" position="0 -1.2 0.1" align="center" scale="0.6 0.6 0.6" color="#fff"></a-text>
+                <a-ring color="#00fbff" radius-inner="0.3" radius-outer="0.35" position="0 -1.6 0.1" theta-length="0" animation__loading="property: theta-length; from: 0; to: 360; dur: 2000; easing: linear; startEvents: fusing"></a-ring>
+            </a-entity>
+
+            <!-- Programa 2: MEDICINA VR -->
+            <a-entity class="interactive program-card" position="0 0.5 -4.5">
+                <a-image src="#img-medicina" width="3.2" height="2.2" material="shader: flat"></a-image>
+                <a-text value="MEDICINA VR - Norberto Furman" position="0 -1.3 0.1" align="center" scale="0.6 0.6 0.6" color="#fff"></a-text>
+                <a-ring color="#00fbff" radius-inner="0.3" radius-outer="0.35" position="0 -1.7 0.1" theta-length="0" animation__loading="property: theta-length; from: 0; to: 360; dur: 2000; easing: linear; startEvents: fusing"></a-ring>
+            </a-entity>
+
+            <!-- Programa 3: BUSCANDO VEDETTE (ACTIVADOR DE VIDEO) -->
+            <a-entity id="vedette-card" class="interactive program-card" position="3.5 0.5 -4" rotation="0 -20 0">
+                <a-image src="#img-vedette" width="3" height="2" material="shader: flat"></a-image>
+                <a-text value="LA FUTURA VEDETTE - Carmen Barbieri" position="0 -1.2 0.1" align="center" scale="0.6 0.6 0.6" color="#fff"></a-text>
+                <a-ring color="#00fbff" radius-inner="0.3" radius-outer="0.35" position="0 -1.6 0.1" theta-length="0" animation__loading="property: theta-length; from: 0; to: 360; dur: 2000; easing: linear; startEvents: fusing"></a-ring>
+            </a-entity>
+
+            <!-- Sitio Web -->
+            <a-entity class="interactive program-card" position="0 -1.8 -3.8">
+                <a-image src="#web-preview" width="4" height="1.2" material="shader: flat" opacity="0.8"></a-image>
+                <a-text value="IR A LA WEB OFICIAL" position="0 0 0.1" align="center" scale="0.7 0.7 0.7" color="#00fbff" font="mozillavr"></a-text>
+                <a-ring color="#00fbff" radius-inner="0.2" radius-outer="0.25" position="0 -0.8 0.1" theta-length="0" animation__loading="property: theta-length; from: 0; to: 360; dur: 2000; easing: linear; startEvents: fusing"></a-ring>
+            </a-entity>
+
+            <!-- Botón Salir -->
+            <a-entity id="exit-btn" class="interactive" position="4 -2.2 -3.5" 
+                      geometry="primitive: plane; width: 1.2; height: 0.4" material="color: #300">
+                <a-text value="CERRAR APP" align="center" scale="0.4 0.4 0.4" color="#ff4444"></a-text>
+                <a-ring color="#ff0000" radius-inner="0.3" radius-outer="0.35" position="0 0 -0.01" theta-length="0" animation__loading="property: theta-length; from: 0; to: 360; dur: 2000; easing: linear; startEvents: fusing"></a-ring>
+            </a-entity>
+        </a-entity>
+
+        <!-- PANTALLA DE VIDEO YOUTUBE (MODAL VR) -->
+        <a-entity id="video-player" position="0 1.6 -3" visible="false" scale="0.001 0.001 0.001">
+            <!-- Fondo oscuro para enfoque -->
+            <a-plane width="15" height="15" position="0 0 -0.5" material="color: #000; opacity: 0.8" transparent="true"></a-plane>
+            
+            <!-- Marco de la pantalla -->
+            <a-plane width="6.4" height="3.8" material="color: #00fbff" position="0 0 -0.1"></a-plane>
+            
+            <!-- Contenedor del Iframe (Simulado en VR con un plano de textura) -->
+            <!-- Nota: En A-Frame puro el video se maneja vía assets, aquí usamos un plano informativo -->
+            <a-entity id="video-surface" geometry="primitive: plane; width: 6.2; height: 3.6" position="0 0 0.05">
+                <!-- Mostramos una miniatura mientras se "carga" -->
+                <a-image src="#img-vedette" width="6.2" height="3.6"></a-image>
+                <a-text value="REPRODUCIENDO: BUSCANDO A LA FUTURA VEDETTE" position="0 2 0" align="center" width="5" color="#00fbff"></a-text>
+            </a-entity>
+
+            <!-- Botón Volver -->
+            <a-entity id="close-video-btn" class="interactive" position="0 -2.2 0.1" 
+                      geometry="primitive: plane; width: 2; height: 0.5" material="color: #bc13fe">
+                <a-text value="VOLVER A CARTELERA" align="center" width="5" color="#fff" font="mozillavr"></a-text>
+                <a-ring color="#fff" radius-inner="0.4" radius-outer="0.45" position="0 0 0.01" theta-length="0" animation__loading="property: theta-length; from: 0; to: 360; dur: 2000; easing: linear; startEvents: fusing"></a-ring>
+            </a-entity>
+            
+            <!-- Texto de aviso -->
+            <a-text value="Abriendo enlace de YouTube..." position="0 -1.3 0" align="center" color="#aaa" scale="0.5 0.5 0.5"></a-text>
+        </a-entity>
+
+    </a-scene>
+
+    <script>
+        const btnEntrar = document.querySelector('#main-button');
+        const loader = document.querySelector('#visual-loader');
+        const lobby = document.querySelector('#lobby');
+        const dashboard = document.querySelector('#dashboard');
+        const videoPlayer = document.querySelector('#video-player');
+        const vedetteCard = document.querySelector('#vedette-card');
+        const closeVideoBtn = document.querySelector('#close-video-btn');
+        const interactives = document.querySelectorAll('.interactive');
+
+        // Manejo de sensores neón para todos los botones (2 segundos)
+        interactives.forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                const ring = el.querySelector('a-ring');
+                if (ring) ring.emit('fusing');
+                if (el.id === 'main-button') loader.emit('startAnim');
+            });
+            el.addEventListener('mouseleave', () => {
+                const ring = el.querySelector('a-ring');
+                if (ring) {
+                    ring.removeAttribute('animation__loading');
+                    ring.setAttribute('theta-length', 0);
+                    ring.setAttribute('animation__loading', 'property: theta-length; from: 0; to: 360; dur: 2000; easing: linear; startEvents: fusing');
+                }
+                if (el.id === 'main-button') loader.emit('stopAnim');
+            });
+        });
+
+        // Ingreso al Dashboard
+        btnEntrar.addEventListener('click', () => {
+            lobby.setAttribute('animation', 'property: scale; to: 0.1 0.1 0.1; dur: 800; easing: easeInBack');
+            setTimeout(() => {
+                lobby.setAttribute('visible', 'false');
+                dashboard.setAttribute('visible', 'true');
+                dashboard.setAttribute('animation', 'property: scale; from: 0.001 0.001 0.001; to: 1 1 1; dur: 1000; easing: easeOutElastic');
+            }, 800);
+        });
+
+        // Lógica específica para abrir Video de Vedette
+        vedetteCard.addEventListener('click', () => {
+            // Ocultar dashboard y mostrar reproductor
+            dashboard.setAttribute('animation', 'property: scale; to: 0.001 0.001 0.001; dur: 500');
+            setTimeout(() => {
+                dashboard.setAttribute('visible', 'false');
+                videoPlayer.setAttribute('visible', 'true');
+                videoPlayer.setAttribute('animation', 'property: scale; from: 0.001 0.001 0.001; to: 1 1 1; dur: 800; easing: easeOutBack');
+                
+                // Abrir el video en una pestaña nueva (comportamiento estándar para VR Web)
+                // En un entorno de producción VR esto se inyectaría en un asset de video
+                window.open("https://www.youtube.com/watch?v=y3qO1OL5nRg", "_blank");
+            }, 500);
+        });
+
+        // Cerrar Video
+        closeVideoBtn.addEventListener('click', () => {
+            videoPlayer.setAttribute('animation', 'property: scale; to: 0.001 0.001 0.001; dur: 500');
+            setTimeout(() => {
+                videoPlayer.setAttribute('visible', 'false');
+                dashboard.setAttribute('visible', 'true');
+                dashboard.setAttribute('animation', 'property: scale; from: 0.001 0.001 0.001; to: 1 1 1; dur: 800; easing: easeOutBack');
+            }, 500);
+        });
+
+        // Salida General
+        document.querySelector('#exit-btn').addEventListener('click', () => {
+            location.reload();
+        });
+    </script>
+</body>
+</html>
